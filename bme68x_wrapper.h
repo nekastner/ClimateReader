@@ -10,12 +10,13 @@ BME68X_INTF_RET_TYPE bme68x_i2c_write(uint8_t reg_addr, const uint8_t *reg_data,
 
 typedef struct {
     i2c_inst_t *i2c_port;
-    uint8_t dev_addr;
-} BME68X_DEV_I2c_CTX;
+    uint8_t i2c_addr;
+} I2c_CTX_WRAPPER;
 
 bool setup_bme(
+    i2c_inst_t *i2c_port,
+    uint8_t i2c_addr,
     struct bme68x_dev *bme_dev,
     struct bme68x_conf *bme_conf,
     struct bme68x_heatr_conf *bme_heatr_conf,
-    BME68X_DEV_I2c_CTX *bme_dev_i2c_ctx,
     uint32_t *del_period);

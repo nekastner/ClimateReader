@@ -11,41 +11,46 @@ void bme68x_delay_us(uint32_t period, void *intf_ptr) {
 }
 
 BME68X_INTF_RET_TYPE bme68x_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr) {
-    BME68X_DEV_I2c_CTX *ctx = (BME68X_DEV_I2c_CTX*)intf_ptr;
-    if (i2c_write_blocking(ctx->i2c_port, ctx->dev_addr, &reg_addr, 1, true) < 0) {
+    I2c_CTX_WRAPPER *ctx = (I2c_CTX_WRAPPER*)intf_ptr;
+    if (i2c_write_blocking(ctx->i2c_port, ctx->i2c_addr, &reg_addr, 1, true) < 0) {
         return BME68X_E_COM_FAIL;
     }
-    if (i2c_read_blocking(ctx->i2c_port, ctx->dev_addr, reg_data, len, false) < 0) {
+    if (i2c_read_blocking(ctx->i2c_port, ctx->i2c_addr, reg_data, len, false) < 0) {
         return BME68X_E_COM_FAIL;
     }
     return BME68X_OK;
 }
 
 BME68X_INTF_RET_TYPE bme68x_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr) {
-    BME68X_DEV_I2c_CTX *ctx = (BME68X_DEV_I2c_CTX*)intf_ptr;
+    I2c_CTX_WRAPPER *ctx = (I2c_CTX_WRAPPER*)intf_ptr;
     uint8_t buffer[len + 1];
     buffer[0] = reg_addr;
     for (uint32_t i = 0; i < len; i++) {
         buffer[i + 1] = reg_data[i];
     }
-    if (i2c_write_blocking(ctx->i2c_port, ctx->dev_addr, buffer, len + 1, false) < 0) {
+    if (i2c_write_blocking(ctx->i2c_port, ctx->i2c_addr, buffer, len + 1, false) < 0) {
         return BME68X_E_COM_FAIL;
     }
     return BME68X_OK;
 }
 
 bool setup_bme(
+    i2c_inst_t *i2c_port,
+    uint8_t i2c_addr,
     struct bme68x_dev *bme_dev,
     struct bme68x_conf *bme_conf,
     struct bme68x_heatr_conf *bme_heatr_conf,
-    BME68X_DEV_I2c_CTX *bme_dev_i2c_ctx,
     uint32_t *del_period) {
+
+    I2c_CTX_WRAPPER i2c_ctx_wrapper;
+    i2c_ctx_wrapper.i2c_port = i2c_port;
+    i2c_ctx_wrapper.i2c_addr = i2c_addr;
 
     bme_dev->read = bme68x_i2c_read;
     bme_dev->write = bme68x_i2c_write;
     bme_dev->delay_us = bme68x_delay_us;
     bme_dev->intf = BME68X_I2C_INTF;
-    bme_dev->intf_ptr = bme_dev_i2c_ctx;
+    bme_dev->intf_ptr = &i2c_ctx_wrapper;
     bme_dev->amb_temp = 25;
     if (bme68x_init(bme_dev) != BME68X_OK) return false;
 

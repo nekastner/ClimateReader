@@ -12,6 +12,8 @@
 #define I2C_PORT i2c0
 #define SDA_PIN 4
 #define SCL_PIN 5
+// lcd vars
+#define LCD_ADDR 0x27
 // loop vars
 #define LOOP_DELAY 3000
 
@@ -31,30 +33,26 @@ int main() {
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
 
     // init lcd
-    lcd_init();
+    lcd_init(I2C_PORT, LCD_ADDR);
 
     // setup bme68x
     struct bme68x_dev bme_dev;
     struct bme68x_conf bme_conf;
     struct bme68x_heatr_conf bme_heatr_conf;
     struct bme68x_data bme_data;
-    BME68X_DEV_I2c_CTX bme_dev_i2c_ctx;
-    bme_dev_i2c_ctx.i2c_port = I2C_PORT;
-    bme_dev_i2c_ctx.dev_addr = BME68X_I2C_ADDR_HIGH;
     uint32_t del_period;
 
     uint8_t n_fields;
     int8_t rslt;
     
-    if (!setup_bme(&bme_dev, &bme_conf, &bme_heatr_conf, &bme_dev_i2c_ctx, &del_period)) {
+    if (!setup_bme(I2C_PORT, BME68X_I2C_ADDR_HIGH, &bme_dev, &bme_conf, &bme_heatr_conf, &del_period)) {
         printf("Fehler bei bme68x_init: %d\n", rslt);
-        lcd_set_cursor(0, 1);
-        lcd_string("Sensor error.");
+        lcd_string_at(I2C_PORT, LCD_ADDR, 0, 1, "Sensor error.");
         while(1) { sleep_ms(100); }
     }
 
     // finish setups
-    lcd_clear();
+    lcd_clear(I2C_PORT, LCD_ADDR);
     char lcd_line_buffer[16];
 
     // mainloop
@@ -64,8 +62,7 @@ int main() {
         rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, &bme_dev);
         if (rslt != BME68X_OK){
             printf("Error on bme68x_set_op_mode: %d\n", rslt);
-            lcd_set_cursor(0, 0);
-            lcd_string("Error");
+            lcd_string_at(I2C_PORT, LCD_ADDR, 0, 0, "Error");
             sleep_ms(LOOP_DELAY);
             continue;
         }
@@ -79,13 +76,12 @@ int main() {
         // line 1
         snprintf(lcd_line_buffer, sizeof(lcd_line_buffer), "Temp: %.2f *C", bme_data.temperature);
         printf(lcd_line_buffer);
-        lcd_set_cursor(0, 0);
-        lcd_string(lcd_line_buffer);
+        lcd_set_cursor(I2C_PORT, LCD_ADDR, 0, 0);
+        lcd_string_at(I2C_PORT, LCD_ADDR, 0, 0, lcd_line_buffer);
         // line 2
         snprintf(lcd_line_buffer, sizeof(lcd_line_buffer), "Humi: %.2f %%", bme_data.humidity);
         printf(lcd_line_buffer);
-        lcd_set_cursor(1, 0);
-        lcd_string(lcd_line_buffer);
+        lcd_string_at(I2C_PORT, LCD_ADDR, 1, 0, lcd_line_buffer);
 
         // delay next mainloop iteration
         sleep_ms(LOOP_DELAY);

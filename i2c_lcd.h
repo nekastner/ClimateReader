@@ -10,21 +10,6 @@
 #include "hardware/i2c.h"
 #include "pico/binary_info.h"
 
-/* Example code to drive a 16x2 LCD panel via a I2C bridge chip (e.g. PCF8574)
-
-   NOTE: The panel must be capable of being driven at 3.3v NOT 5v. The Pico
-   GPIO (and therefore I2C) cannot be used at 5v.
-
-   You will need to use a level shifter on the I2C lines if you want to run the
-   board at 5v.
-
-   Connections on Raspberry Pi Pico board, other boards may vary.
-
-   GPIO 4 (pin 6)-> SDA on LCD bridge board
-   GPIO 5 (pin 7)-> SCL on LCD bridge board
-   3.3v (pin 36) -> VCC on LCD bridge board
-   GND (pin 38)  -> GND on LCD bridge board
-*/
 // commands
 #define LCD_CLEARDISPLAY        0x01
 #define LCD_RETURNHOME          0x02
@@ -58,31 +43,16 @@
 
 #define LCD_ENABLE_BIT          0x04
 
-// By default these LCD display drivers are on bus address 0x27
-#define addr                    0x27
-
 // Modes for lcd_send_byte
 #define LCD_CHARACTER           1
 #define LCD_COMMAND             0
 
-#define MAX_LINES               2
-#define MAX_CHARS               16
-
-/* Quick helper function for single byte transfers */
-void i2c_write_byte(uint8_t val);
-
-void lcd_toggle_enable(uint8_t val);
-
-// The display is sent a byte as two separate nibble transfers
-void lcd_send_byte(uint8_t val, int mode);
-
-void lcd_clear(void);
-
-// go to location on LCD
-void lcd_set_cursor(int line, int position);
-
-static inline void lcd_char(char val);
-
-void lcd_string(const char *s);
-
-void lcd_init();
+void lcd_init              (i2c_inst_t *port, uint8_t addr);
+void lcd_clear             (i2c_inst_t *port, uint8_t addr);
+void lcd_string_at         (i2c_inst_t *port, uint8_t addr, int line, int position, const char *s);
+void lcd_set_cursor        (i2c_inst_t *port, uint8_t addr, int line, int position);
+void lcd_string            (i2c_inst_t *port, uint8_t addr, const char *s);
+void lcd_send_byte         (i2c_inst_t *port, uint8_t addr, uint8_t val, int mode);
+void i2c_write_byte        (i2c_inst_t *port, uint8_t addr, uint8_t val);
+static inline void lcd_char(i2c_inst_t *port, uint8_t addr, char val);
+void lcd_toggle_enable     (i2c_inst_t *port, uint8_t addr, uint8_t val);
