@@ -1,21 +1,22 @@
 // standard libs
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/binary_info.h"
 #include "hardware/i2c.h"
-// manually added (and maybe slightly modified) libs
-#include "i2c_lcd.h"
+// manually added (and modified) libs
+#include "lib/i2c_lcd/i2c_lcd.h"
 #include "bme68x.h"
 // self written code
 #include "bme68x_wrapper.h"
 
 // i2c vars
-#define I2C_PORT i2c0
-#define SDA_PIN 4
-#define SCL_PIN 5
+i2c_inst_t *I2C_PORT = i2c0;
+const uint8_t SDA_PIN = 4;
+const uint8_t SCL_PIN = 5;
 // lcd vars
-#define LCD_ADDR 0x27
+const uint8_t LCD_ADDR = 0x27;
 // loop vars
-#define LOOP_DELAY 3000
+const uint16_t LOOP_DELAY = 3000;
 
 int main() {
 

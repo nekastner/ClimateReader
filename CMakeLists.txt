@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 add_executable(${PROJECT_NAME} ${PROJECT_NAME}.c
-    i2c_lcd.c
+    lib/i2c_lcd/i2c_lcd.c
     bme68x.c
     bme68x_wrapper.c)
 

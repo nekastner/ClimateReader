@@ -5,10 +5,10 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "pico/binary_info.h"
+
+#ifndef I2C_LCD_H
+#define I2C_LCD_H
 
 // commands
 #define LCD_CLEARDISPLAY        0x01
@@ -48,11 +48,28 @@
 #define LCD_COMMAND             0
 
 void lcd_init              (i2c_inst_t *port, uint8_t addr);
-void lcd_clear             (i2c_inst_t *port, uint8_t addr);
-void lcd_string_at         (i2c_inst_t *port, uint8_t addr, int line, int position, const char *s);
-void lcd_set_cursor        (i2c_inst_t *port, uint8_t addr, int line, int position);
 void lcd_string            (i2c_inst_t *port, uint8_t addr, const char *s);
 void lcd_send_byte         (i2c_inst_t *port, uint8_t addr, uint8_t val, int mode);
-void i2c_write_byte        (i2c_inst_t *port, uint8_t addr, uint8_t val);
-static inline void lcd_char(i2c_inst_t *port, uint8_t addr, char val);
-void lcd_toggle_enable     (i2c_inst_t *port, uint8_t addr, uint8_t val);
+
+static inline void lcd_clear(i2c_inst_t *port, uint8_t addr) {
+    lcd_send_byte(port, addr, LCD_CLEARDISPLAY, LCD_COMMAND);
+}
+
+static inline void lcd_set_cursor(i2c_inst_t *port, uint8_t addr, int line, int position) {
+    lcd_send_byte(port, addr, (line == 0) ? 0x80 + position : 0xC0 + position, LCD_COMMAND);
+}
+
+static inline void lcd_string_at(i2c_inst_t *port, uint8_t addr, int line, int position, const char *s){
+    lcd_set_cursor(port ,addr, line, position);
+    lcd_string(port, addr, s);
+}
+
+static inline void i2c_write_byte(i2c_inst_t *port, uint8_t addr, uint8_t val) {
+    i2c_write_blocking(port, addr, &val, 1, false);
+}
+
+static inline void lcd_char(i2c_inst_t *port, uint8_t addr, char val) {
+    lcd_send_byte(port, addr, val, LCD_CHARACTER);
+}
+
+#endif
