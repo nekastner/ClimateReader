@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// significantly modified!
+
 #include <stdio.h>
 #include "hardware/i2c.h"
 

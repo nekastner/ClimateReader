@@ -45,7 +45,7 @@
 #ifndef BME68X_H_
 #define BME68X_H_
 
-#include "bme68x_defs.h"
+#include "./bme68x_defs.h"
 
 /* CPP guard */
 #ifdef __cplusplus
